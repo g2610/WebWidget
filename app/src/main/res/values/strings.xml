@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">WebWidget</string>
+    <string name="action_settings">Settings</string>
+    <string name="load">load</string>
+    <string name="widgetsave">save Widget</string>
+</resources>
