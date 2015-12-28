@@ -43,6 +43,8 @@ public class WebShotService extends Service {
         frame.addView(webView);
         winManager.addView(frame, params);
 
+        // This is the important code :)
+        webView.setDrawingCacheEnabled(true);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl("http://raspberrypi.wut5dwti0mvremiv.myfritz.net/tempNow.php");
 
@@ -54,13 +56,19 @@ public class WebShotService extends Service {
             final Point p = new Point();
             winManager.getDefaultDisplay().getSize(p);
 
-            webView.measure(MeasureSpec.makeMeasureSpec((p.x < p.y ? p.y : p.x),
-                            MeasureSpec.EXACTLY),
-                    MeasureSpec.makeMeasureSpec((p.x < p.y ? p.x : p.y),
-                            MeasureSpec.EXACTLY));
-            webView.layout(0, 0, webView.getMeasuredWidth(), webView.getMeasuredHeight());
+            int x = p.x;
+            int y = p.y;
 
-            webView.postDelayed(capture, 1000);
+            webView.measure(
+                    MeasureSpec.makeMeasureSpec(x, MeasureSpec.EXACTLY),
+                    MeasureSpec.makeMeasureSpec(y, MeasureSpec.EXACTLY));
+
+            int measuredHeightheight = webView.getMeasuredHeight();
+            int measuredWidthwidth = webView.getMeasuredWidth();
+
+            webView.layout(0, 0, measuredWidthwidth, measuredWidthwidth);
+
+            webView.postDelayed(capture, 2000);
         }
     };
 
@@ -68,8 +76,7 @@ public class WebShotService extends Service {
         @Override
         public void run() {
             try {
-                final Bitmap bmp = Bitmap.createBitmap(webView.getWidth(),
-                        webView.getHeight(), Bitmap.Config.ARGB_8888);
+                final Bitmap bmp = webView.getDrawingCache();
                 final Canvas c = new Canvas(bmp);
                 webView.draw(c);
 

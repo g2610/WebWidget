@@ -4,6 +4,7 @@
     android:minWidth="250dp"
     android:initialLayout="@layout/widget_layout_linear_horizontal"
     android:previewImage="@drawable/widget_preview"
+    android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen"
     >
 
