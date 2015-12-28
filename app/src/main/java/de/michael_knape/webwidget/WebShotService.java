@@ -63,10 +63,10 @@ public class WebShotService extends Service {
                     MeasureSpec.makeMeasureSpec(x, MeasureSpec.EXACTLY),
                     MeasureSpec.makeMeasureSpec(y, MeasureSpec.EXACTLY));
 
-            int measuredHeightheight = webView.getMeasuredHeight();
-            int measuredWidthwidth = webView.getMeasuredWidth();
+            int measuredHeight = webView.getMeasuredHeight();
+            int measuredWidth = webView.getMeasuredWidth();
 
-            webView.layout(0, 0, measuredWidthwidth, measuredWidthwidth);
+            webView.layout(0, 0, measuredWidth, measuredHeight);
 
             webView.postDelayed(capture, 2000);
         }
