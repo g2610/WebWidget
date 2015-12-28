@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.IBinder;
@@ -44,7 +45,7 @@ public class WebShotService extends Service {
         winManager.addView(frame, params);
 
         // This is the important code :)
-        webView.setDrawingCacheEnabled(true);
+        webView.setBackgroundColor(Color.TRANSPARENT);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl("http://raspberrypi.wut5dwti0mvremiv.myfritz.net/tempNow.php");
 
@@ -63,12 +64,9 @@ public class WebShotService extends Service {
                     MeasureSpec.makeMeasureSpec(x, MeasureSpec.EXACTLY),
                     MeasureSpec.makeMeasureSpec(y, MeasureSpec.EXACTLY));
 
-            int measuredHeight = webView.getMeasuredHeight();
-            int measuredWidth = webView.getMeasuredWidth();
+            webView.layout(0, 0, webView.getMeasuredWidth(), webView.getMeasuredHeight());
 
-            webView.layout(0, 0, measuredWidth, measuredHeight);
-
-            webView.postDelayed(capture, 2000);
+            webView.postDelayed(capture, 5000);
         }
     };
 
@@ -76,14 +74,15 @@ public class WebShotService extends Service {
         @Override
         public void run() {
             try {
-                final Bitmap bmp = webView.getDrawingCache();
+                final Bitmap bmp = Bitmap.createBitmap(webView.getWidth(),
+                        webView.getHeight(), Bitmap.Config.ARGB_8888);
                 final Canvas c = new Canvas(bmp);
                 webView.draw(c);
 
                 updateWidgets(bmp);
-            }
-            catch (IllegalArgumentException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                Toast.makeText(WebShotService.this, "WebWidget Update Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
             stopSelf();
