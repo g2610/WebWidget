@@ -13,11 +13,15 @@ import android.graphics.Point;
 import android.os.IBinder;
 import android.view.View.MeasureSpec;
 import android.view.WindowManager;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+
+import java.text.DateFormat;
+import java.util.Date;
 
 public class WebShotService extends Service {
     private WebView webView;
@@ -45,6 +49,29 @@ public class WebShotService extends Service {
         winManager.addView(frame, params);
 
         // This is the important code :)
+        //webView.setDrawingCacheEnabled(true);
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                if (newProgress >= 100) {
+                    final Point p = new Point();
+                    winManager.getDefaultDisplay().getSize(p);
+
+                    int x = p.x;
+                    int y = p.y;
+
+                    webView.measure(
+                            MeasureSpec.makeMeasureSpec(x, MeasureSpec.EXACTLY),
+                            MeasureSpec.makeMeasureSpec(y, MeasureSpec.EXACTLY));
+
+                    webView.layout(0, 0, webView.getMeasuredWidth(), webView.getMeasuredHeight());
+
+                    webView.postDelayed(capture, 5000);
+
+                    Toast.makeText(WebShotService.this, "WebWidget will Update! Progress is " + newProgress, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
         webView.setBackgroundColor(Color.TRANSPARENT);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.loadUrl("http://raspberrypi.wut5dwti0mvremiv.myfritz.net/tempNow.php");
@@ -54,19 +81,6 @@ public class WebShotService extends Service {
 
     private final WebViewClient client = new WebViewClient() {
         public void onPageFinished(WebView view, String url) {
-            final Point p = new Point();
-            winManager.getDefaultDisplay().getSize(p);
-
-            int x = p.x;
-            int y = p.y;
-
-            webView.measure(
-                    MeasureSpec.makeMeasureSpec(x, MeasureSpec.EXACTLY),
-                    MeasureSpec.makeMeasureSpec(y, MeasureSpec.EXACTLY));
-
-            webView.layout(0, 0, webView.getMeasuredWidth(), webView.getMeasuredHeight());
-
-            webView.postDelayed(capture, 5000);
         }
     };
 
@@ -100,13 +114,15 @@ public class WebShotService extends Service {
 
         final RemoteViews views = new RemoteViews(getPackageName(), R.layout.widget_layout_linear_horizontal);
         views.setImageViewBitmap(R.id.widget_image, bmp);
+        views.setTextViewText(R.id.lastUpdateTime, DateFormat.getInstance().format(new Date(System.currentTimeMillis())));
         widgetManager.updateAppWidget(ids, views);
 
-        Toast.makeText(this, "WebWidget Update", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "WebWidget Updated", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
+
 }

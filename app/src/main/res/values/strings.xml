@@ -3,4 +3,5 @@
     <string name="action_settings">Settings</string>
     <string name="load">load</string>
     <string name="widgetsave">save Widget</string>
+    <string name="update">Update</string>
 </resources>
