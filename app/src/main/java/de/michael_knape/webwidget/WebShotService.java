@@ -2,7 +2,6 @@ package de.michael_knape.webwidget;
 
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -26,6 +25,8 @@ import java.util.Date;
 public class WebShotService extends Service {
     private WebView webView;
     private WindowManager winManager;
+
+    private int[] currentIds;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         winManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
@@ -68,15 +69,25 @@ public class WebShotService extends Service {
 
                     webView.postDelayed(capture, 5000);
 
-                    Toast.makeText(WebShotService.this, "WebWidget will Update! Progress is " + newProgress, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(WebShotService.this, "WebWidget will Update! Progress is " + newProgress + "%", Toast.LENGTH_SHORT).show();
                 }
             }
         });
         webView.setBackgroundColor(Color.TRANSPARENT);
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.loadUrl("http://raspberrypi.wut5dwti0mvremiv.myfritz.net/tempNow.php");
 
-        return START_STICKY;
+        if (intent.hasExtra(AppWidgetManager.EXTRA_APPWIDGET_ID)) {
+            currentIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_ID);
+        }
+
+        if (intent.hasExtra(WidgetProvider.EXTRA_URL)) {
+            String url = intent.getStringExtra(WidgetProvider.EXTRA_URL);
+            webView.loadUrl(url);
+        } else {
+            webView.loadUrl("www.google.de");
+        }
+
+        return START_REDELIVER_INTENT;
     }
 
     private final WebViewClient client = new WebViewClient() {
@@ -105,17 +116,16 @@ public class WebShotService extends Service {
 
     private void updateWidgets(Bitmap bmp) {
         final AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
-        final int[] ids = widgetManager.getAppWidgetIds(
-                new ComponentName(this, WidgetProvider.class));
 
-        if (ids.length < 1) {
+        if (currentIds.length < 1) {
             return;
         }
 
         final RemoteViews views = new RemoteViews(getPackageName(), R.layout.widget_layout_linear_horizontal);
         views.setImageViewBitmap(R.id.widget_image, bmp);
         views.setTextViewText(R.id.lastUpdateTime, DateFormat.getInstance().format(new Date(System.currentTimeMillis())));
-        widgetManager.updateAppWidget(ids, views);
+        views.setTextViewText(R.id.titleTextView, webView.getTitle());
+        widgetManager.updateAppWidget(currentIds, views);
 
         Toast.makeText(this, "WebWidget Updated", Toast.LENGTH_SHORT).show();
     }
