@@ -1,9 +1,7 @@
 package de.michael_knape.webwidget;
 
 import android.appwidget.AppWidgetManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -19,6 +17,8 @@ public class WebWidgetConfigurationActivity extends ActionBarActivity {
     Button savewidgetbtn;
     EditText urlEdittext;
     WebView activityWebView;
+    Bundle m_extras;
+
 
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
@@ -28,15 +28,17 @@ public class WebWidgetConfigurationActivity extends ActionBarActivity {
         setResult(RESULT_CANCELED);
         setContentView(R.layout.activity_web_widget_config);
 
+        Intent intent = getIntent();
+        m_extras = intent.getExtras();
+        mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+
         loadbtn = (Button) findViewById(R.id.loadButton);
         savewidgetbtn = (Button) findViewById(R.id.saveConfigWidgetButton);
         urlEdittext = (EditText) findViewById(R.id.urlEditText);
         activityWebView = (WebView) findViewById(R.id.activityWebView);
 
-        SharedPreferences prefs = getSharedPreferences(WidgetProvider.EXTRA_URL, Context.MODE_PRIVATE);
-        String url = prefs.getString(WidgetProvider.EXTRA_URL, "");
+        String url = WidgetProvider.getSharedPreferencesUrl(this, mAppWidgetId);
         urlEdittext.setText(url);
-
 
         activityWebView.getSettings().setJavaScriptEnabled(true);
         activityWebView.setBackgroundColor(Color.TRANSPARENT);
@@ -60,10 +62,12 @@ public class WebWidgetConfigurationActivity extends ActionBarActivity {
         savewidgetbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences prefs = getSharedPreferences(WidgetProvider.EXTRA_URL, Context.MODE_PRIVATE);
+                WidgetProvider.setSharedPreferencesUrl(v.getContext(), urlEdittext.getText().toString(), mAppWidgetId);
+                /*SharedPreferences prefs = getSharedPreferences(WidgetProvider.EXTRA_URL, Context.MODE_PRIVATE);
                 SharedPreferences.Editor edit = prefs.edit();
                 edit.putString(WidgetProvider.EXTRA_URL, urlEdittext.getText().toString());
                 edit.commit();
+*/
 
                 Intent resultValue = new Intent();
                 resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
@@ -73,15 +77,6 @@ public class WebWidgetConfigurationActivity extends ActionBarActivity {
                 finish();
             }
         });
-
-        // intent for Configuration Widget
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        if (extras != null) {
-            mAppWidgetId = extras.getInt(
-                    AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
-        }
 
         // If they gave us an intent without the widget id, just bail.
         if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {

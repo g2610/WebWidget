@@ -26,7 +26,7 @@ public class WebShotService extends Service {
     private WebView webView;
     private WindowManager winManager;
 
-    private int[] currentIds;
+    private int currentId;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         winManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
@@ -69,7 +69,7 @@ public class WebShotService extends Service {
 
                     webView.postDelayed(capture, 5000);
 
-                    Toast.makeText(WebShotService.this, "WebWidget will Update! Progress is " + newProgress + "%", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(WebShotService.this, "WebWidget will Update!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -77,7 +77,8 @@ public class WebShotService extends Service {
         webView.getSettings().setJavaScriptEnabled(true);
 
         if (intent.hasExtra(AppWidgetManager.EXTRA_APPWIDGET_ID)) {
-            currentIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_ID);
+            currentId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
         }
 
         if (intent.hasExtra(WidgetProvider.EXTRA_URL)) {
@@ -117,15 +118,11 @@ public class WebShotService extends Service {
     private void updateWidgets(Bitmap bmp) {
         final AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
 
-        if (currentIds.length < 1) {
-            return;
-        }
-
         final RemoteViews views = new RemoteViews(getPackageName(), R.layout.widget_layout_linear_horizontal);
         views.setImageViewBitmap(R.id.widget_image, bmp);
         views.setTextViewText(R.id.lastUpdateTime, DateFormat.getInstance().format(new Date(System.currentTimeMillis())));
         views.setTextViewText(R.id.titleTextView, webView.getTitle());
-        widgetManager.updateAppWidget(currentIds, views);
+        widgetManager.updateAppWidget(currentId, views);
 
         Toast.makeText(this, "WebWidget Updated", Toast.LENGTH_SHORT).show();
     }
